@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.westwind.guard.dao.ProductDao">
+<select id="getProduct" resultType="org.westwind.guard.model.Product">
+    SELECT * FROM product_tb order by id desc
+</select>
+<insert id="addProduct" parameterType="org.westwind.guard.model.Product" flushCache="true">
+   INSERT INTO product_tb (id,productName,companyName) VALUES (#{id},#{productName},#{companyName})
+</insert>
+<delete id="delProduct" parameterType="int">
+    DELETE FROM product_tb WHERE id=#{id}
+</delete>
+</mapper>
