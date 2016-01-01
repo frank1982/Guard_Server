@@ -22,11 +22,30 @@
 	</table>
 	<table>
 	<tr>
+		<%
+			//int pageNum=Integer.parseInt(request.getParameter("pageNum"));
+				int pageNum=Integer.parseInt(String.valueOf(request.getAttribute("pageNum")));
+				int offset=pageNum*20-1;
+				int preOffset=(pageNum-2)*20;
+				int pageTotalNum=(int)(Integer.parseInt(String.valueOf(request.getAttribute("wordTotalNum")))/20+1);
+		%>
 		<td align="center"><a>合计&nbsp;${wordTotalNum}条</a></td>
 		<td align="center"><a>共&nbsp;${pageTotalNum}页</a></td>
-		<td align="center"><a>上一页</a></td>
+		<%
+			if(pageNum > 1){
+		%>
+			<td align="center"><a href="getWord.action?offset=<%=preOffset %>">上一页</a></td>
+		<%
+			}
+		%>
 		<td align="center"><a>第${pageNum}页</a></td>
-		<td align="center"><a>下一页</a></td>
+		<%
+			if(pageNum < pageTotalNum){
+		%>
+			<td align="center"><a href="getWord.action?offset=<%=offset %>">下一页</a></td>
+		<%
+			}
+		%>
 	</tr>
 	</table>
 	</center>

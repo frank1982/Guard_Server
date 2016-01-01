@@ -23,7 +23,7 @@ public class WordController {
 		try {
 			//解决中文乱码
 			String strWord=new String(word.getWord().getBytes("iso-8859-1"),"utf-8");
-			System.out.println(strWord);			
+			//System.out.println(strWord);			
 			word.setWord(strWord);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
@@ -37,13 +37,55 @@ public class WordController {
 		wordDao.addWord(word);
 		
         //show result
+		int numOfPage=20;
         ModelAndView mav = new ModelAndView("wordTable");//实例化一个VIew的ModelAndView实例  		  
-        List<Word> list=wordDao.getWord(0,5);
+        List<Word> list=wordDao.getWord(0,numOfPage);
         int number=wordDao.getWordNumber();
         mav.addObject("wordList", list);
         mav.addObject("wordTotalNum", number);
-        mav.addObject("pageTotalNum", (int)(number/5)+1);
+        mav.addObject("pageTotalNum", (int)(number/numOfPage)+1);
         mav.addObject("pageNum", 1);
 		return mav;  
 	}
+	
+	//getWords
+	@RequestMapping(value="/getWord.action",method = RequestMethod.GET,produces = "charset=utf-8")
+	public ModelAndView getWord(int offset){  //自动拼装成对象;   
+
+        //show result
+		int numOfPage=20;
+		//System.out.println(offset);
+		ApplicationContext ctx=null;
+        ctx=new ClassPathXmlApplicationContext("ApplicationContext.xml");
+		WordDao wordDao=(WordDao) ctx.getBean("wordDao");
+        ModelAndView mav = new ModelAndView("wordTable");//实例化一个VIew的ModelAndView实例  		  
+        List<Word> list=wordDao.getWord(offset,numOfPage);
+        int number=wordDao.getWordNumber();
+        mav.addObject("wordList", list);
+        mav.addObject("wordTotalNum", number);
+        mav.addObject("pageTotalNum", (int)(number/numOfPage)+1);
+        mav.addObject("pageNum", (int)((offset+1)/numOfPage)+1);
+		return mav;  
+	}
+	
+	//delete product
+		@RequestMapping(value="/delWord.action")
+		public ModelAndView delWord(int id){     
+
+			ApplicationContext ctx=null;
+	        ctx=new ClassPathXmlApplicationContext("ApplicationContext.xml");
+			WordDao wordDao=(WordDao) ctx.getBean("wordDao");
+	        wordDao.delWord(id);
+			
+	        //show result
+	        int numOfPage=5;
+	        ModelAndView mav = new ModelAndView("wordTable");//实例化一个VIew的ModelAndView实例  		  
+	        List<Word> list=wordDao.getWord(0,numOfPage);
+	        int number=wordDao.getWordNumber();
+	        mav.addObject("wordList", list);
+	        mav.addObject("wordTotalNum", number);
+	        mav.addObject("pageTotalNum", (int)(number/numOfPage)+1);
+	        mav.addObject("pageNum", 1);
+			return mav;  
+		}
 }

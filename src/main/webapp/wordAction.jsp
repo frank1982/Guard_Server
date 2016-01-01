@@ -15,7 +15,7 @@ margin-left:30px;
 </head>
 <body>
 <ul>
-<li><a href="getWord.action" target="tableFrame">查询全部关键词</a></li>
+<li><a href="getWord.action?offset=0" target="tableFrame">查询全部关键词</a></li>
 <li><a href="addWord.jsp" target="tableFrame">新增关键词</a></li>
 
 </ul>
