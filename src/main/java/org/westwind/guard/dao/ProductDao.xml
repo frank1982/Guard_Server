@@ -11,4 +11,7 @@
 <delete id="delProduct" parameterType="int">
     DELETE FROM product_tb WHERE id=#{id}
 </delete>
+<select id="getUpdateTime" resultType="Date">
+    SELECT max(updatetime) FROM product_tb
+</select>
 </mapper>

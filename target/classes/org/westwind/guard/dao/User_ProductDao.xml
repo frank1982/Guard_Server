@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.westwind.guard.dao.User_ProductDao">
+<insert id="addUser_Product" parameterType="org.westwind.guard.model.User_Product" flushCache="true">
+	insert into user_product_tb (userid, productid) 
+	select #{userid},#{productid} from dual
+	where not exists(select * from user_product_tb where userid=#{userid} and productid=#{productid});
+</insert>
+<select id="checkUser_Product" resultType="int">
+     SELECT count(*) from user_product_tb where userid=#{0} AND productid=#{1}
+</select>
+
+<delete id="delUser_Product" parameterType="int" flushCache="true">
+    DELETE FROM user_product_tb where userid=#{0} AND productid=#{1}
+</delete>
+
+<select id="getProductid" parameterType="int" resultType="org.westwind.guard.model.User_Product">
+    SELECT * FROM user_product_tb where userid=#{0} order by id desc 
+</select>
+
+</mapper>
