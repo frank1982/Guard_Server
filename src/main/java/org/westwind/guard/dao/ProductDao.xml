@@ -14,4 +14,10 @@
 <select id="getUpdateTime" resultType="Date">
     SELECT max(updatetime) FROM product_tb
 </select>
+<select id="getProductName" resultType="String">
+    SELECT productname FROM product_tb where id=#{productid}
+</select>
+<select id="getProductNum" resultType="int">
+    SELECT count(*) from product_tb
+</select>
 </mapper>

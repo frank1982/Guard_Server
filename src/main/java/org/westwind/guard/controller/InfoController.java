@@ -40,9 +40,11 @@ public class InfoController {
 	//根据userid,limit,offset从客户端发起查询
     @RequestMapping(value="/getMyNews.action",method = RequestMethod.GET, produces = "application/json; charset=utf-8")
     @ResponseBody()
-    public String getMyNews(@RequestParam String userid){
-
-        System.out.println("id is: "+userid);
+    public String getMyNews(@RequestParam String userid,String limit,String offset){
+    	
+    	int myLimit=Integer.parseInt(limit);
+    	int myOffset=Integer.parseInt(offset);
+    	
         //首先根据userid找到对应的已订阅的productid;
         ApplicationContext ctx=null;
         ctx=new ClassPathXmlApplicationContext("ApplicationContext.xml");
@@ -51,52 +53,54 @@ public class InfoController {
 		InfoDao infoDao=(InfoDao) ctx.getBean("infoDao");
 		
 		List<User_Product> list=user_productDao.getProductid(Integer.parseInt(userid));//根据userid找到productid list;
-		
+		System.out.println("list.size:"+list.size());
 		
 		JSONArray JsonArray = new JSONArray();
         JSONObject tmpJson = new JSONObject();
 		
 		//下面要根据productid筛选info
-		for(int i = 0; i < list.size(); i++){
+        if(list.size()>0){//查到订阅的产品信息
 
-			int productid=list.get(i).getProductid();
-			System.out.println(productid);
-			//根据productid找到productName;
+        	for(int i = 0; i < list.size(); i++){
+
+    			int productid=list.get(i).getProductid();
+    			//System.out.println(productid);
+    			//根据productid找到productName;
+    			String productName=productDao.getProductName(productid);
+    			//System.out.println(productName);
+    			//下面要根据productName找info
+    			List<Info> infoList=infoDao.getInfo(productName, myLimit, myOffset);
+    			//System.out.println("infoList.size:"+infoList.size());
+    			for(int j=0;j<infoList.size();j++){
+    				tmpJson.put("id", infoList.get(j).getId());
+    	        	tmpJson.put("productName", infoList.get(j).getProductName());
+    	        	tmpJson.put("title", infoList.get(j).getTitle());
+    	        	tmpJson.put("descript", infoList.get(j).getDescript());
+    	        	tmpJson.put("link", infoList.get(j).getLink());
+    	        	Date infoTime=infoList.get(j).getInfoTime();
+    	            String infoTimeStr=new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(infoTime);
+    	        	tmpJson.put("infoTime", infoTimeStr);
+    	        	//System.out.println(updateTimeStr);
+    	        	JsonArray.add(tmpJson);
+    			}
+            }
         }
-		
-        
-        
-        /*
-        JSONArray JsonArray = new JSONArray();
-        JSONObject tmpJson = new JSONObject();
-        long initId=Long.valueOf(id).longValue(); 
-        Random random =new Random();
-        int num=random.nextInt(4)+1;//[0,4)
-        for(int i=0;i<num;i++){
-        	initId++;
-        	tmpJson.put("id", String.valueOf(initId));
-        	tmpJson.put("platformName", "陆金所");
-        	Date nowTime = new Date(System.currentTimeMillis());
-        	SimpleDateFormat sdFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
-        	String retStrFormatNowDate = sdFormatter.format(nowTime);
-        	//System.out.println(retStrFormatNowDate);
-        	tmpJson.put("insertTime", retStrFormatNowDate);
-        	tmpJson.put("title", "陆金所提现出现大面积延迟?"+String.valueOf(initId));
-        	JsonArray.add(tmpJson);
-        }
-		
+
         return JsonArray.toString();
-        */
-        return "success";
     } 
 	
-	
+	//客户端获取当前监控的产品总数
 	@RequestMapping(value="/getPlatformNum.action")
     @ResponseBody()
 	public String getProductNum(){     
 		
         System.out.println("getProductNum"); 
-        return "1256";
+        ApplicationContext ctx=null;
+		ctx=new ClassPathXmlApplicationContext("ApplicationContext.xml");
+		ProductDao productDao=(ProductDao) ctx.getBean("productDao");
+		int num=productDao.getProductNum();
+		String numStr=String.valueOf(num);
+        return numStr;
 	}
 	
 	//根据id查询最新数据
@@ -108,44 +112,48 @@ public class InfoController {
         JSONArray JsonArray = new JSONArray();
         JSONObject tmpJson = new JSONObject();
         long initId=Long.valueOf(id).longValue(); 
-        Random random =new Random();
-        int num=random.nextInt(4)+1;//[0,4)
-        for(int i=0;i<num;i++){
-        	initId++;
-        	tmpJson.put("id", String.valueOf(initId));
-        	tmpJson.put("platformName", "陆金所");
-        	Date nowTime = new Date(System.currentTimeMillis());
-        	SimpleDateFormat sdFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
-        	String retStrFormatNowDate = sdFormatter.format(nowTime);
-        	//System.out.println(retStrFormatNowDate);
-        	tmpJson.put("insertTime", retStrFormatNowDate);
-        	tmpJson.put("title", "陆金所提现出现大面积延迟?"+String.valueOf(initId));
-        	JsonArray.add(tmpJson);
-        }
+        ApplicationContext ctx=null;
+        ctx=new ClassPathXmlApplicationContext("ApplicationContext.xml");
+		InfoDao infoDao=(InfoDao) ctx.getBean("infoDao");		
 
+    	List<Info> infoList=infoDao.getNewInfoById(initId);
+        for(int j=infoList.size()-1;j>=0;j--){
+    		tmpJson.put("id", String.valueOf(infoList.get(j).getId()));
+    	    tmpJson.put("platformName", infoList.get(j).getProductName());
+    	    tmpJson.put("title", infoList.get(j).getTitle());
+    	    Date infoTime=infoList.get(j).getInfoTime();
+    	    String infoTimeStr=new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(infoTime);
+    	    tmpJson.put("insertTime", infoTimeStr);
+    	    JsonArray.add(tmpJson);
+    	}
+        
         return JsonArray.toString();
     } 
     
-    //查询最新数据
+    //客户端第一次查询最新数据
     @RequestMapping(value="/getNews.action",method = RequestMethod.GET, produces = "application/json; charset=utf-8")
     @ResponseBody()
     public String findNews(){
 
-        JSONArray JsonArray = new JSONArray();
+    	//首先根据userid找到对应的已订阅的productid;
+        ApplicationContext ctx=null;
+        ctx=new ClassPathXmlApplicationContext("ApplicationContext.xml");
+		InfoDao infoDao=(InfoDao) ctx.getBean("infoDao");		
+		JSONArray JsonArray = new JSONArray();
         JSONObject tmpJson = new JSONObject();
-        long initId= 1000000000;
-        for(int i=0;i<4;i++){
-        	tmpJson.put("id", String.valueOf(initId));
-        	tmpJson.put("platformName", "陆金所");
-        	Date nowTime = new Date(System.currentTimeMillis());
-        	SimpleDateFormat sdFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
-        	String retStrFormatNowDate = sdFormatter.format(nowTime);
-        	tmpJson.put("insertTime", retStrFormatNowDate);
-        	tmpJson.put("title", "陆金所提现出现大面积延迟?"+String.valueOf(initId));
-        	JsonArray.add(tmpJson);
-        	initId++;
-        }
+    	List<Info> infoList=infoDao.getNewInfo(4);//最新4条;
+    	for(int j=infoList.size()-1;j>=0;j--){
+    		tmpJson.put("id", String.valueOf(infoList.get(j).getId()));
+    	    tmpJson.put("platformName", infoList.get(j).getProductName());
+    	    tmpJson.put("title", infoList.get(j).getTitle());
+    	    Date infoTime=infoList.get(j).getInfoTime();
+    	    String infoTimeStr=new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(infoTime);
+    	    tmpJson.put("insertTime", infoTimeStr);
+    	    JsonArray.add(tmpJson);
+    	}
+		
         return JsonArray.toString();
+        
     } 
     
     //删除订阅信息

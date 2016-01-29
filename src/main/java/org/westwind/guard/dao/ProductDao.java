@@ -13,4 +13,6 @@ public interface ProductDao {
 	public void delProduct(int id);
 	public Date getUpdateTime();
 	public String getProductName(int productid);//根据productid找到productName;
+	//获取所有产品数量
+	public int getProductNum();
 }
